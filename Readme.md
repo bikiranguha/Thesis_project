@@ -25,6 +25,15 @@ input_data.py: Looks at the input file and harnesses the data to be used by main
 mainFile.py: Main script which runs the simulations, generates the results and tries to reconstruct the real world data. Currently, it compares real world sim with TS3ph simulation and gathers new 
 events by comparing voltage magnitude data. Every time a new event is detected, TS3ph simulation is run again.
 
+changeLoadFn.py:	Changes load and generator dispatch and saves the new raw file
+runSimPSSE.py: Function to run N-2 + fault contingencies in PSSE
+			   currently saves the voltage, angle and frequency of the bus
+
+fix_indent_problem.py: Script to fix the mixed tab indentation problem
+getROCFn.py: Function to calculate the time rate of change of a variable
+readMACINFO.py: Function to organize the read mac info data
+
+			   
 Old Files:
 batch_plot_v_0922.py: File from which batch_get_v.py is derived (copied from 'CAPE-TS Simulations' project)
 batch_get_v.py: Original file to get all the complex voltage info (mag and angle) under a structure with the bus number as the key

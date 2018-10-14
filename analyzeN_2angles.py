@@ -1,3 +1,13 @@
+# can do the following analysis
+#   get a set of events where generator angle separation occurs
+#   plot all the gen angles of any given event
+#   analyze the steady state angular velocities for the oscillating and non-oscillating cases (voltage)
+#   outputs a text file which classifies the angular data according to their rate of change
+
+
+
+
+
 # load the object which contains all the angle info for the N-2 fault studies
 import pickle
 import matplotlib.pyplot as plt
@@ -5,6 +15,7 @@ from getROCFn import getROC # function to get the rate of change of the angle
 import time
 import numpy as np
 from getBusDataFn import getBusData
+import random
 
 
 class AngleEventOrg():
@@ -26,20 +37,22 @@ end = time.time()
 
 print 'Time to load the data in seconds: ', end - start
 
+tme = AngleDataDict['time']
+timestep = abs(tme[1] - tme[0])
+ind_fault_clearance = int(0.31/timestep)  + 1 # fault cleared
 
 
-"""
 EventDict = {}
 # Organize the angle data by event
 for key in AngleDataDict:
     if key == 'time':
         continue
     angle = AngleDataDict[key]
-    Event = key.split('/')[0].strip()
+    event = key.split('/')[0].strip()
     Bus = key.split('/')[1].strip()
-    if Event not in EventDict:
-        EventDict[Event] = AngleEventOrg()
-    EventDict[Event].AngDict[Bus] = angle
+    if event not in EventDict:
+        EventDict[event] = AngleEventOrg()
+    EventDict[event].AngDict[Bus] = angle
 ##############
 
 # get the set of generators in the raw file
@@ -50,12 +63,95 @@ for bus in rawBusDataDict:
     BusType = rawBusDataDict[bus].type 
     if BusType == '2' or BusType == '3':
         genSet.add(bus)
+    if BusType == '3':
+        swingBus = bus
 
-print genSet
+#print genSet
 """
-tme = AngleDataDict['time']
-timestep = abs(tme[1] - tme[0])
-ind_fault_clearance = int(0.31/timestep)  + 1 # fault cleared
+# see which events cause generator angle separation
+angSepEvents = []
+for event in EventDict:
+    AngDict = EventDict[event].AngDict
+    dAngSigns = []
+    for bus in AngDict:
+        if bus in genSet:
+            angle = AngDict[bus]
+            dAngDt = getROC(angle,tme,absolute=False)
+            dAngDtSteadyMean = np.mean(dAngDt[-100:])
+            dAngSigns.append(dAngDtSteadyMean)
+    all_pos = all(val > 0 for val in dAngSigns)
+    if all_pos == True:
+        continue
+    all_neg = all(val < 0 for val in dAngSigns) 
+    if all_neg == True:
+        continue
+
+    all_zero = all(val == 0.0 for val in dAngSigns) 
+    if all_zero == True:
+        continue
+    angSepEvents.append(event)
+######################## 
+"""
+
+
+"""
+# plot all the generator angles for a given event
+event1 = '151,152,1;151,201,1;F151' # event where angle separates
+event2 = '151,152,1;154,3008,1;F154' # event where no angle separation occurs, but all gen angle constantly go upwards
+event3 = '153,3006,1;3007,3008,1;F3008' # event where angles are all stable
+
+
+# angle separation
+AngDict = EventDict[event1].AngDict
+for bus in AngDict:
+    if bus in genSet:
+        angle = AngDict[bus]
+        plt.plot(tme, angle, label = bus)
+plt.legend()
+plt.xlabel('Time (s)')
+plt.ylabel('Angle (degrees)')
+plt.title('Angle separation')
+plt.grid()
+plt.savefig('AngleSep.png')
+plt.close()
+#plt.show()
+
+
+# angle instability but no separation
+AngDict = EventDict[event2].AngDict
+for bus in AngDict:
+    if bus in genSet:
+        angle = AngDict[bus]
+        plt.plot(tme, angle, label = bus)
+plt.legend()
+plt.xlabel('Time (s)')
+plt.ylabel('Angle (degrees)')
+plt.title('Angular instability but no separation')
+plt.grid()
+plt.savefig('AngleUnStable.png')
+plt.close()
+
+# angle stability
+AngDict = EventDict[event3].AngDict
+for bus in AngDict:
+    if bus in genSet:
+        angle = AngDict[bus]
+        plt.plot(tme, angle, label = bus)
+plt.legend()
+plt.xlabel('Time (s)')
+plt.ylabel('Angle (degrees)')
+plt.title('Angular stability')
+plt.grid()
+plt.savefig('AngleStable.png')
+plt.close()
+"""
+
+
+
+
+
+
+
 
 
 """
@@ -82,8 +178,8 @@ for key in AngleDataDict:
 """
 
 
-
-# analyze the steady state angular velocities for the oscillating and non-oscillating cases
+"""
+########### analyze the steady state angular velocities for the oscillating and non-oscillating cases
 OscillationClassFile = 'Casedvdt.txt' # file which has all the cases classified
 
 with open(OscillationClassFile,'r') as f:
@@ -138,15 +234,18 @@ for key in class1keys:
 end = time.time()
 
 print 'Time to analyze the angle data: ', end - start
+####################
+"""
 
 
 
 
+"""
 # histograms of the steady state average dv_dt for class 0 and 1
 plt.hist(averageClass0, bins='auto',label='Class 0')  
 plt.hist(averageClass1, bins='auto',label='Class 1') 
 plt.show()
-
+"""
 
 """
 # histograms of the initial (after fault clearance) average dv_dt for class 0 and 1
@@ -155,6 +254,91 @@ plt.hist(initialClass1, bins='auto',label='Class 1')
 plt.legend()
 plt.show()
 """
+
+
+
+############ divide the simulations into angle stability (class 0: stable and class 1: unstable) by looking 
+########### at the rate of change of the angle (relative to the swing bus angle) during steady state
+angleDevMeans = []
+angleDevThreshold = 1.0
+angleDevClass0 = [] # cases where the bus angle does not deviate wrt swing bus angle
+angleDevClass1 = [] # cases where the bus angle deviates wrt swing bus angle
+tapBus = ['204', '3007']
+eventSet = set()
+for event in EventDict:
+    AngDict = EventDict[event].AngDict
+    refBusAngle = AngDict[swingBus]
+    for bus in AngDict:
+        if bus != swingBus and bus not in tapBus:
+            angle = AngDict[bus]
+            relAngle = refBusAngle - angle # numpy array of the angle difference to the swing bus
+            ddtrelAngle = getROC(relAngle,tme)
+            ddtrelAngSS = ddtrelAngle[-100:] # steady state angle deviation wrt the swing bus
+            meanddtrelAngSS = np.mean(ddtrelAngSS) 
+            signalKey =  event + '/' + bus
+            if meanddtrelAngSS > angleDevThreshold: # the bus angle deviates wrt the swing bus angle
+                angleDevClass1.append(class1)
+                #if event not in eventSet:
+                #    print event
+                #    eventSet.add(event)
+            else: # the bus angle does not deviate wrt the swing bus angle
+                angleDevClass0.append(signalKey)
+
+
+
+
+
+
+###############################
+
+
+"""
+# plots of the distributions of the angle deviation means
+plt.hist(angleDevMeans, bins='auto') 
+#plt.legend()
+plt.show()
+"""
+
+"""
+# plots of some of the class examples
+class0Samples = random.sample(angleDevClass0,10)
+for case in class0Samples:
+    plt.plot(tme,AngleDataDict[case])
+
+plt.show()
+plt.close()
+
+class1Samples = random.sample(angleDevClass1,10)
+for case in class1Samples:
+    plt.plot(tme,AngleDataDict[case])
+
+plt.show()
+##############
+"""
+
+"""
+# output the cases and the classes
+with open( 'AngleCases.txt','w') as f:
+    f.write('Class 0:')
+    f.write('\n')
+
+    for case in angleDevClass0:
+        f.write(case)
+        f.write('\n')
+
+    f.write('Class 1:')
+    f.write('\n')
+
+
+    for case in angleDevClass1:
+        f.write(case)
+        f.write('\n')
+#########################
+"""
+
+
+
+
 
 
 

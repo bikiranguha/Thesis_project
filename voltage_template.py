@@ -80,7 +80,7 @@ tmpltCls0, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(
 tmpltCls0 = np.array(tmpltCls0).reshape(-1)
 tmeCropped = tme[ind_fault_clearance:ind_data_end]
 meantmpltCls0 = np.mean(tmpltCls0)
-#plt.plot(tmeCropped,tmpltCls0, label = 'Class 0')
+#plt.plot(tmeCropped,tmpltCls0, label = 'Class 0 Template')
 #plt.title('Class 0 template')
 #plt.grid()
 #plt.show()
@@ -95,19 +95,19 @@ tmpltCls1, u, u0, d, jm, p, fpc = fuzz.cluster.cmeans(
 tmpltCls1 = np.array(tmpltCls1).reshape(-1)
 tmeCropped = tme[ind_fault_clearance:ind_data_end]
 meantmpltCls1 = np.mean(tmpltCls1)
-#plt.plot(tmeCropped,tmpltCls1, label = 'Class 1')
+#plt.plot(tmeCropped,tmpltCls1, label = 'Class 1 Template')
 #plt.title('Class 0 vs Class 1 templates')
 #plt.legend()
 #plt.show()
 #plt.close()
 
-"""
+
 # test the similarity indices using some class 0 samples
 random.seed(42) # uncomment if reproducibility is needed
-class0Sample = random.sample(class0keys,10)
+class0Samples = random.sample(class0keys,10)
 
 #sumEucDist = 0.0
-for sample in class0Sample:
+for sample in class0Samples:
     voltage = VoltageDataDict[sample]
     croppedV = voltage[ind_fault_clearance:ind_data_end]
     meanCroppedV = np.mean(croppedV)
@@ -119,55 +119,84 @@ for sample in class0Sample:
     # not using offset
     #similarity0 = 1/np.linalg.norm(croppedV-tmpltCls0)
     #similarity1 = 1/np.linalg.norm(croppedV-tmpltCls1)
-    print 'Sample: ', sample
-    print 'Similarity 0: ', similarity0
-    print 'Similarity 1: ', similarity1
-"""
+    print 'Class 0 Sample: ', sample
+    print 'Similarity to template 0: ', similarity0
+    print 'Similarity  template 1: ', similarity1
 
+
+
+print '\n\n\n'
 
 # test the similarity indices using some class 1 samples
 random.seed(42) # uncomment if reproducibility is needed
-class1Sample = random.sample(class1keys,10)
+class1Samples = random.sample(class1keys,10)
 
 #sumEucDist = 0.0
-for sample in class1Sample:
+for sample in class1Samples:
     voltage = VoltageDataDict[sample]
     croppedV = voltage[ind_fault_clearance:ind_data_end]
     meanCroppedV = np.mean(croppedV)
     meanOffset0 = (meanCroppedV-meantmpltCls0)*np.ones(croppedV.shape[0])
     meanOffset1 = (meanCroppedV-meantmpltCls1)*np.ones(croppedV.shape[0])
-    """
+
     # using offset
     similarity0 = 1/np.linalg.norm(croppedV-tmpltCls0-meanOffset0)
     similarity1 = 1/np.linalg.norm(croppedV-tmpltCls1-meanOffset1)
-    """
     # not using offset
-    similarity0 = 1/np.linalg.norm(croppedV-tmpltCls0)
-    similarity1 = 1/np.linalg.norm(croppedV-tmpltCls1)
-    print 'Sample: ', sample
-    print 'Similarity 0: ', similarity0
-    print 'Similarity 1: ', similarity1
+    #similarity0 = 1/np.linalg.norm(croppedV-tmpltCls0)
+    #similarity1 = 1/np.linalg.norm(croppedV-tmpltCls1)
+    print 'Class 1 Sample: ', sample
+    print 'Similarity to template 0: ', similarity0
+    print 'Similarity  template 1: ', similarity1
 
 
 
-
+"""
 # tests
 #key = '152,202,1;3003,3005,2;F3003/211'
 #key = '203,205,2;3003,3005,2;F3003/201'
-key = '151,152,2;151,201,1;F201/3001'
-voltage = VoltageDataDict[key]
-croppedV = voltage[ind_fault_clearance:ind_data_end]
-"""
-plt.plot(tmeCropped,tmpltCls1, label = 'Class 1')
-plt.plot(tmeCropped,tmpltCls0, label = 'Class 0')
-plt.plot(tmeCropped,croppedV,label = 'Sample')
-plt.title('Class 0 vs Class 1 templates')
+#key = '151,152,2;151,201,1;F201/3001'
+# plot the templates and 2 samples of class 0
+random.seed(42) # uncomment if reproducibility is needed
+class0Samples = random.sample(class0keys,2)
+plt.plot(tmeCropped,tmpltCls1, label = 'Class 1 Template')
+plt.plot(tmeCropped,tmpltCls0, label = 'Class 0 Template')
+for sample in class0Samples:
+    voltage = VoltageDataDict[sample]
+    croppedV = voltage[ind_fault_clearance:ind_data_end]
+
+
+    #plt.plot(tmeCropped,croppedV,label = 'Sample')
+    plt.plot(tmeCropped,croppedV)
+plt.title('Class 0 samples with templates')
 plt.grid()
 plt.legend()
 plt.show()
-"""
-plt.plot(tme,voltage)
+plt.close()
+
+
+# plot the templates and 2 samples of class 1
+random.seed(42) # uncomment if reproducibility is needed
+class1Samples = random.sample(class1keys,2)
+plt.plot(tmeCropped,tmpltCls1, label = 'Class 1 Template')
+plt.plot(tmeCropped,tmpltCls0, label = 'Class 0 Template')
+for sample in class1Samples:
+    voltage = VoltageDataDict[sample]
+    croppedV = voltage[ind_fault_clearance:ind_data_end]
+    plt.plot(tmeCropped,croppedV)
+plt.title('Class 1 samples with templates')
+plt.grid()
+plt.legend()
 plt.show()
+plt.close()
+"""
+
+
+"""
+# just plot a case
+#plt.plot(tme,voltage)
+#plt.show()
+"""
 
 
 
