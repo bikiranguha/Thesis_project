@@ -1,3 +1,35 @@
+Current way of extracting info from large datasets:
+	The voltage, angle, frequency of N-2 plus fault studies with different load levels are saved in Event0.pkl to Event8.pkl. The object organization is given in PSSE Sim Script Trials/simPSSEBatchxxx.py scripts
+	Since i cannot load all the objects together, this is what i do currently to get all the voltage data into arrays:
+		pickleTohdf5.py: Load each object separately and then make lists out of the voltage data, and corresponding event keys are saved in keyxxx.pkl files
+						 It also saves the time list into a separate pkl file
+		saveVhf5.py: Load each voltage list into a separate array with keys in the hf5 file object.
+		compileVDatah5f.py then generate input arrays, target arrays (for voltage oscillation) and corresponding key lists. The arrays are saved to .h5 files while the list is saved to a pickle object
+		
+		
+
+
+testLROscLarge.py:
+	Runs various performance tests with the LR model as a classifier for voltage oscillation on the large dataset (100% to 106% load)
+	Generates the templates for class 0 and class 1
+testRNN.py:
+	Builds a Sequential RNN model from keras library
+	Has following features:
+		Test any case
+		Generate plots of performance wrt the number of time steps in input
+		Generate plots of performance wrt the number of epochs
+		Generate plots of performance wrt the test/train ratio
+		Get the average accuracy, false positives and false negatives over a 100 trials
+
+testLRPerformanceOsc.py:
+	Script to rigorously test the LR classifier on the voltage oscillation data
+	The features tested include:
+		The raw time series data 
+		A combination of the following features: similarity thresholds to the templates, peak voltage overshoot, gen ratio at a depth of one to the fault bus, rise time
+	Also contains code to generate 3d plot of the accuracy wrt no. of timesteps and test/train ratio. Can save the 3d plot to be loaded interactively
+
+load3DPlot.py:
+	Loads a 3d plot to view interactively
 AbnormalVoltClassifierSimple.py: 
 	Uses an LR model to classify low (or high) voltage vs normal voltage
 	Uses a bunch of features (such as voltage recovery value, prefault voltage, load ratio, distance to fault) as inputs
@@ -26,6 +58,7 @@ mainFile.py: Main script which runs the simulations, generates the results and t
 events by comparing voltage magnitude data. Every time a new event is detected, TS3ph simulation is run again.
 
 changeLoadFn.py:	Changes load and generator dispatch and saves the new raw file
+changeLoadFnv2.py:  The only difference here is that the input raw file's load is converted to constant power.
 runSimPSSE.py: Function to run N-2 + fault contingencies in PSSE
 			   currently saves the voltage, angle and frequency of the bus
 

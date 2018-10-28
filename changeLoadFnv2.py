@@ -37,9 +37,34 @@ def changeLoad(raw,start,end,step,newdir):
         New raw files are created for each percentage step in [start,end]. 
         The current step defines the percentage scaling up (or down) factor for load and generation
     """
-    rawBusDataDict = getBusData(raw)
+
+    # convert the raw file to another one where all the load is constant power
+    raw_conp = raw.replace('.raw','') + '_conp.raw'
+    redirect.psse2py()
+    psspy.psseinit(buses=80000)
+
+    # ignore the output
+    psspy.report_output(6,'',[0,0])
+    psspy.progress_output(6,'',[0,0])
+    psspy.alert_output(6,'',[0,0])
+    psspy.prompt_output(6,'',[0,0])
+
+    # read the raw file and convert all the loads to constant power
+    ierr = psspy.read(0, raw)
+   
+    # multi-line command to convert the loads to 100% constant power
+    psspy.conl(0,1,1,[1,0],[0.0,0.0,0.0,0.0])
+    psspy.conl(0,1,2,[1,0],[0.0,0.0,0.0,0.0])
+    psspy.conl(0,1,3,[1,0],[0.0,0.0,0.0,0.0])
+    ierr = psspy.rawd_2(0,1,[1,1,1,0,0,0,0],0,raw_conp)
+    # run change Load on the constant power load raw file
 
 
+
+
+
+
+    rawBusDataDict = getBusData(raw_conp)
     # create a new directory to put the files in
     currentdir = os.getcwd()
     
@@ -51,7 +76,7 @@ def changeLoad(raw,start,end,step,newdir):
     lossRatio = 0.0  # gen scale-up factor: (scalePercent + (scalePercent-100)*lossRatio)/100
     ############################################
 
-
+    # create new raw files with scaled up loads and generation
     for scalePercent in range(start,end+step,step):
         scalePercent = float(scalePercent) # float is needed, otherwise 101/100 returns 1
 
@@ -77,7 +102,7 @@ def changeLoad(raw,start,end,step,newdir):
         genPListInt = []
 
 
-        raw_name = raw.replace('.raw','')
+        raw_name = raw_conp.replace('.raw','')
         out_file = raw_name + scalePercentStr + '.raw'  # output file
         out_path = output_dir+'/'+out_file
         impLoadBuses = [] # enter specified load buses to scale, if empty all loads are scaled
@@ -86,7 +111,7 @@ def changeLoad(raw,start,end,step,newdir):
 
 
         #Read raw file
-        with open(raw,'r') as f:
+        with open(raw_conp,'r') as f:
             filecontent = f.read()
             filelines = filecontent.split('\n')
 
@@ -150,7 +175,7 @@ def changeLoad(raw,start,end,step,newdir):
 
 
             # get total MW gen
-            totalGenMW = 0.0
+            totalGenMW = 0.0 # total generation excluding the swing bus
             for i in range(genStartIndex, genEndIndex):
                 words = filelines[i].split(',')
                 GenBus = words[0].strip()
@@ -177,31 +202,7 @@ def changeLoad(raw,start,end,step,newdir):
                 else:
                     GenMWDict[key] = GenMVA
 
-
-
-
-
-
-        
-
-
-
-        """
-        # scale loads by specified percentage
-        for i in range(len(loadPListInt)):
-            #if len(impLoadBuses) ==0: # empty list means that all loads need to be scaled up
-            loadPListInt[i] *= scalePercent/100
-            loadQListInt[i] *= scalePercent/100
-            # else:
-            #     if loadBusListInt[i] in impLoadBuses:
-            #         loadPListInt[i] *= scalePercent/100
-            #         loadQListInt[i] *= scalePercent/100
-        """
-
-
-
-
-
+        #  generate the new raw file
         with open(out_path,'w') as f:
             # copy everything before load data
             for i in range(loadStartIndex):
@@ -273,7 +274,7 @@ def changeLoad(raw,start,end,step,newdir):
 
 
 
-    #currentdir = os.getcwd()
+    # solves each of the newly generated raw files and saves them 
     output_dir = currentdir + '/' + newdir
     NewRawFiles = os.listdir(output_dir)
     PathList = [(output_dir + '/' + f) for f in NewRawFiles]
@@ -317,7 +318,11 @@ def changeLoad(raw,start,end,step,newdir):
         print "\n Reading raw file:",settings['filename']
         ierr = psspy.read(0, settings['filename'])
         ierr = psspy.fnsl(settings['pf_options'])
-        ierr = psspy.rawd_2(0,1,[1,1,1,0,0,0,0],0,PathList[i])
+        converge = psspy.solved()
+        if converge == 0:
+            ierr = psspy.rawd_2(0,1,[1,1,1,0,0,0,0],0,PathList[i])
+        else: # file does not converge, remove raw file, keep log file
+            os.remove(PathList[i])
         """
         # Uncomment if you want to save .sav files as well
         # Load conversion (multiple-step)
@@ -333,4 +338,5 @@ def changeLoad(raw,start,end,step,newdir):
 
 
 if __name__ == '__main__':
-    changeLoad('savnw.raw',105,120,5,'test_chLoad')
+    raw = 'savnw.raw'
+    changeLoad(raw,101,110,1,'test_chLoad')

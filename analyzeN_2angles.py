@@ -68,6 +68,7 @@ for bus in rawBusDataDict:
 
 #print genSet
 """
+####### NOTE: THIS METHOD CANNOT DETECT SEPARATION WHEN ALL ANGLES 
 # see which events cause generator angle separation
 angSepEvents = []
 for event in EventDict:
@@ -80,21 +81,21 @@ for event in EventDict:
             dAngDtSteadyMean = np.mean(dAngDt[-100:])
             dAngSigns.append(dAngDtSteadyMean)
     all_pos = all(val > 0 for val in dAngSigns)
-    if all_pos == True:
+    if all_pos == True: # all gen angle deviations are positive
         continue
     all_neg = all(val < 0 for val in dAngSigns) 
-    if all_neg == True:
+    if all_neg == True: # all gen angle deviations are negative
         continue
 
     all_zero = all(val == 0.0 for val in dAngSigns) 
-    if all_zero == True:
+    if all_zero == True: # # all gen angle deviations are zero
         continue
     angSepEvents.append(event)
 ######################## 
 """
 
-
 """
+##### generator generator angle plots for events
 # plot all the generator angles for a given event
 event1 = '151,152,1;151,201,1;F151' # event where angle separates
 event2 = '151,152,1;154,3008,1;F154' # event where no angle separation occurs, but all gen angle constantly go upwards
@@ -147,7 +148,24 @@ plt.close()
 """
 
 
+# plot all the generator angles for any event
+#event = '151,152,2;151,201,1;F201'
+#event = '151,152,1;151,201,1;F201'
+event = '151,152,1;151,201,1;F151'
+AngDict = EventDict[event].AngDict
+for bus in AngDict:
+    if bus in genSet:
+        angle = AngDict[bus]
+        plt.plot(tme, angle, label = bus)
+plt.legend()
+plt.xlabel('Time (s)')
+plt.ylabel('Angle (degrees)')
+plt.title(event + ' Gen Angles')
+plt.grid()
+plt.savefig('test3.png')
+plt.close()
 
+#########################
 
 
 
@@ -256,7 +274,7 @@ plt.show()
 """
 
 
-
+"""
 ############ divide the simulations into angle stability (class 0: stable and class 1: unstable) by looking 
 ########### at the rate of change of the angle (relative to the swing bus angle) during steady state
 angleDevMeans = []
@@ -277,10 +295,10 @@ for event in EventDict:
             meanddtrelAngSS = np.mean(ddtrelAngSS) 
             signalKey =  event + '/' + bus
             if meanddtrelAngSS > angleDevThreshold: # the bus angle deviates wrt the swing bus angle
-                angleDevClass1.append(class1)
-                #if event not in eventSet:
-                #    print event
-                #    eventSet.add(event)
+                angleDevClass1.append(signalKey)
+                if event not in eventSet:
+                    print event
+                    eventSet.add(event)
             else: # the bus angle does not deviate wrt the swing bus angle
                 angleDevClass0.append(signalKey)
 
@@ -290,7 +308,7 @@ for event in EventDict:
 
 
 ###############################
-
+"""
 
 """
 # plots of the distributions of the angle deviation means

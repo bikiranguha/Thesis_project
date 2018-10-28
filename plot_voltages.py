@@ -58,16 +58,16 @@ event1Flag = '-event01'
 event1Param = '0.1,OUT,LINE,201,202,,1,7,,,,,'
 
 event2Flag = '-event02'
-event2Param = '0.2,FAULTON,ABCG,201,,,,1.0e-6,1.0e-6,1.0e-6,0.0,0.0,0.0'
+event2Param = '0.2,FAULTON,ABCG,151,,,,1.0e-6,1.0e-6,1.0e-6,0.0,0.0,0.0'
 
 event3Flag = '-event03'
-event3Param = '0.3,FAULTOFF,ABCG,201,,,,,,,,,'
+event3Param = '0.3,FAULTOFF,ABCG,151,,,,,,,,,'
 
 event4Flag = '-event04'
-event4Param = '0.31,OUT,LINE,201,204,,1,7,,,,,'
+event4Param = '0.31,OUT,LINE,151,201,,1,7,,,,,'
 
 exitFlag = '-event05'
-exitParam = '3,EXIT,,,,,,,,,,,'
+exitParam = '10,EXIT,,,,,,,,,,,'
 EventList = [event1Flag,event1Param,event2Flag,event2Param,event3Flag,event3Param,event4Flag,event4Param,exitFlag,exitParam]
 """
 # just N-2 line outages
@@ -87,7 +87,7 @@ EventList = [event1Flag,event1Param,event2Flag,event2Param,exitFlag,exitParam]
 Results = runSim(rawPath,EventList,'TS3phLoadOut.log')
 
 # print the final steady state voltage of some bus
-print Results[205].mag[-1]
+#print Results[205].mag[-1]
 # get plots for all the buses in the HV set
 # plot to see if everything is ok
 for Bus in list(HVBusSet):

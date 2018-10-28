@@ -318,9 +318,10 @@ for i in range(x_ax.shape[0]):
 
 """
 # Plotting the 3d plot
+X_ax,Y_ax = np.meshgrid(x_ax, y_ax)
 fig = plt.figure()
 ax = fig.gca(projection='3d')
-ax.plot_surface(x_ax, y_ax, z_ax)
+ax.plot_surface(X_ax, Y_ax, z_ax)
 plt.show()
 """
 
