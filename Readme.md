@@ -5,13 +5,48 @@ Current way of extracting info from large datasets:
 						 It also saves the time list into a separate pkl file
 		saveVhf5.py: Load each voltage list into a separate array with keys in the hf5 file object.
 		compileVDatah5f.py then generate input arrays, target arrays (for voltage oscillation) and corresponding key lists. The arrays are saved to .h5 files while the list is saved to a pickle object
+
+avgFilterFn.py:
+			Implements a multi-cycle filter
 		
 		
+testFaultClassifier.py:
+	Script to get the voltage csv file and use it to train a classifier which can classify:
+	Class 0: Steady state
+	Class 1: Three phase fault at bus
+	Class 2: SLG fault at bus
+	Class 3: Something happened, not a fault at this bus
 
+testFaultClassifierv2.py:
+	Same as testFaultClassifier.py with the improvement that the classifier also tries to categorize SLG phase B and C as class 2
 
+testFaultClassifierv3.py:
+	Same as testFaultClassifierv2.py except:
+		SLG B has class 3
+		SLG C has class 4
+		everything else has class 5
+	Added functionality to see output when the results are shifted.
+convRawPconToZcon.py:
+	converts constant power loads to constant impedance loads and saves the raw file
+		
+TS3phSim3phFaults.py:
+	Script to apply three phase fault and phase A line to ground fault to all the buses in the raw file and save the data to csv files
+TS3phSim3phFaultsL.py:	
+	Script to apply three phase fault and PALG fault to all buses for multiple raw files (with scaled loads)
+	Also put functionality to check the output of the classifier to a voltage stream
+	
+	
+runSimFn3ph.py:
+	Function to get three phase voltage and angles for all buses while simulating an event, and also write these stuff to csv file as well as 
+	the event id to a separate text file. This fn is used by TS3phSim3phFaults.py
+
+runSimFn3phL.py::
+	Same as runSimFn3ph.py, just built for TS3phSim3phFaultsL.py
 testLROscLarge.py:
 	Runs various performance tests with the LR model as a classifier for voltage oscillation on the large dataset (100% to 106% load)
 	Generates the templates for class 0 and class 1
+	Evaluates performance using templates and similarity thresholds and maximum voltage after fault clearance.
+	Also has script to do cross-validation and feature scaling (mean 0, variance 1)
 testRNN.py:
 	Builds a Sequential RNN model from keras library
 	Has following features:
