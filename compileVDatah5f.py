@@ -74,6 +74,9 @@ for i in range(9):
     del vArray
 
 
+
+
+
 h5f.close()
 
 inputVArray = np.array(inputVList)
@@ -90,8 +93,18 @@ h5f2.create_dataset('targetAbnV', data=targetAbnVArray)
 h5f2.close()
 
 
-# save the event key list
-save_obj(totalKeyList,'allKeys')
+#save the event key list to a csv file
+
+
+
+
+keyFile = 'obj/allEventKeys.txt'
+with open(keyFile,'wb') as f:
+    f.write('Line1;Line2;FaultBus/CurrentBus')
+    f.write('\n')
+    for key in totalKeyList:
+        f.write(key)
+        f.write('\n')
 
 
 

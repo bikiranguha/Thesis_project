@@ -1,6 +1,6 @@
 # tests the LR model on the large voltage (using different load levels) dataset
 print 'Importing modules'
-import pickle
+import dill as pickle
 import matplotlib.pyplot as plt
 import h5py
 # importing evaluation metrics
@@ -84,8 +84,34 @@ print 'Importing data'
 vDataFile = h5py.File('obj/vInpClass.h5', 'r')
 inputV = vDataFile['inp'][:] 
 targetOsc= vDataFile['targetOsc'][:]
-
 vDataFile.close()
+
+
+# get the event key list
+eventFile = 'obj/allEventKeys.txt'
+eventList = []
+with open(eventFile,'r') as f:
+    fileLines = f.read().split('\n')
+    for line in fileLines[1:]: # skip header
+        if line == '':
+            continue
+        eventList.append(line.strip())
+
+oscList = []
+# get a list of events which cause oscillations
+for i in range(len(targetOsc)):
+    if targetOsc[i] == 1:
+        oscList.append(eventList[i])
+
+# write the osc list to a file
+with open('oscFile.txt','w') as f:
+    f.write('Line1;Line2;FaultBus/CurrentBus')
+    f.write('\n')
+    for key in oscList:
+        f.write(key)
+        f.write('\n')
+
+
 
 
 ##########
@@ -94,26 +120,35 @@ x = inputV[:,:100]
 x = preprocessing.scale(x) # the scaled inputs have zero mean and unit variance for each feature
 x = preprocessing.scale(x,axis=1) # the scaled inputs have zero mean and unit variance for every sample
 y = targetOsc
-testSize = 0.25
-#classWeightDict = {0:0.03,1:1}
-#classWeightDict = {0:0.1,1:1}
-classWeightDict = {0:1,1:1}
-"""
-# if not using cross-validate
-avg_fp, avg_fn, avg_accuracy = testMLModel(x,y, testSize, classWeightDict,10)
-print('Average accuracy: {}'.format(avg_accuracy))
-print('Average false positives: {}'.format(avg_fp))
-print('Average false negatives: {}'.format(avg_fn))
-"""
 
 
-# if using cross-validate
-y_pred, accuracy, fp, fn, tp, tn = testMLModel2(x,y, testSize, classWeightDict,10)
-print('Accuracy: {}'.format(accuracy))
-print('False positives: {}'.format(fp))
-print('False negatives: {}'.format(fn))
-print('True positives: {}'.format(tp))
-print('True negatives: {}'.format(tn))
+
+
+
+
+
+
+# testSize = 0.25
+# #classWeightDict = {0:0.03,1:1}
+# #classWeightDict = {0:0.1,1:1}
+# classWeightDict = {0:1,1:1}
+
+
+# # if not using cross-validate
+# avg_fp, avg_fn, avg_accuracy = testMLModel(x,y, testSize, classWeightDict,10)
+# print('Average accuracy: {}'.format(avg_accuracy))
+# print('Average false positives: {}'.format(avg_fp))
+# print('Average false negatives: {}'.format(avg_fn))
+
+
+
+# # if using cross-validate
+# y_pred, accuracy, fp, fn, tp, tn = testMLModel2(x,y, testSize, classWeightDict,10)
+# print('Accuracy: {}'.format(accuracy))
+# print('False positives: {}'.format(fp))
+# print('False negatives: {}'.format(fn))
+# print('True positives: {}'.format(tp))
+# print('True negatives: {}'.format(tn))
 
 ##############
 

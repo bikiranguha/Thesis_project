@@ -1,11 +1,167 @@
-Current way of extracting info from large datasets:
+
+
+
+plotSingleCaseTS3ph.py:
+	Use this script to plot any case (using any file) in TS3ph. All the relevant petsc options need to be specified here
+
+PFORNLSim folder:
+	Contains the results of N-2 F simulations on the pf_ornl raw file using PSSE (detailed in N_2Framework.py)
+
+PFORNLTS3phScripts folder:
+	Contains scripts which run pf_ornl simulations in TS3ph in parallel.
+	
+LSTM Prediction folder:
+	Contains examples of one-step ahead and multi-time step ahead predictions of time series using LSTM.
+	Tried to apply on the NREL PMU angle data, but the results mostly sucked.
+
+IIT PMU data:
+	Contains anomaly detection experiments on the IIT PMU data
+
+comed PMU data:
+	Contains anomaly detection experiments on the comed data
+
+	
+	
+TSIRegressor.py:
+	build a regressor which can output the transient stability index by looking at all the generator 
+	angles after a fault
+	tries various regressors	
+
+New framework for getting N-2 F simulation data from PSSE as well as TS3ph:
+	Totally explained in N_2Framework.py
+	generateSimBatches.py contains scripts to generate scripts for sim in PSSE and TS3ph (sequential as well as parallel)
+Framework developed for testing three class angle stability classifier:
+	See or run ThreeClassClassifierFramework.py.
+	Note that the angle separation events and the oscillation threshold has been chosen from analyses carried out 
+	in 	analyzeOsc.py and analyzeN_2FAngles.py respectively.
+		
+Current way of extracting info from the large N-2 plus fault dataset (using all the scaled loads): 
+	gatherN_2FData.py: Gather all the data (voltage, angle, frequency) from the small csv chunks and make it one large file.
+	visualizeN_2F.py: To visualize any event at a bus, just provide the event key
+	gatherGenSteadyAngles.py: 
+		organizes all the generator angle data during (apparent) steady state, this helps in determining if there is any angle oscillation
+		has easy modifications to also get the whole angle data (from start to beginning) for all the buses in one row
+		has also been used to gather all the gen trip scenarios for visualization of angles
+	analyzeOsc.py: 
+		script which contains experiments to determine the relative angle locus and also to determine angle separation (in which events and when)
+		has scripts to sort all the angle abnormalities, determine which cases need generator tripping
+		has a section which visualizes the angles for any given simulation.
+	PSSE Simulation Scripts/simGenTrip.py:
+		Uses 'GenTripData.txt' (generated from analyzeOsc.py) to simulate those cases which need generator tripping while running the N-2 plus fault cases.
+		These modified simulations are then saved into new sets of csv files which will be integrated later on into the machine learning analysis workspace.
+	integrateN_2VA.py:
+		outputs a new vN_2F and aN_2F csv file which contains steady state (last 120) values of all the events, with each row corresponding to an event.
+		The corresponding event list and bus list are also saved.
+		Same thing is done to get the transient samples (a predefined number of samples ) after the final line is outaged.
+	
+	analyzeVoltageN_2FLarge.py:
+		Looks at the steady state voltage (bus wise) and set thresholds to classify oscillation
+		Tries out different classifiers and gets the precision, recall, f1 score and accuracies on the dataset.
+
+	visualizeN_2FSteadyAngles.py:
+		Use to visualize the steady state gen angles at all buses for a given event.
+	analyzeN_2FAngles.py:
+		analyze the steady state angles, set targets and classify oscillation vs non-oscillation
+		tests a lot of different classifier models
+		Also implements PCA based event extraction
+	
+	
+clusterOScGenAngle.py:
+	apply clustering algorithms (K Means and Hierarchical clustering) on the generator angle data (N-2 F) and see what happens
+	
+Old way of extracting info from the large N-2 plus fault dataset (using all the scaled loads):
 	The voltage, angle, frequency of N-2 plus fault studies with different load levels are saved in Event0.pkl to Event8.pkl. The object organization is given in PSSE Sim Script Trials/simPSSEBatchxxx.py scripts
 	Since i cannot load all the objects together, this is what i do currently to get all the voltage data into arrays:
 		pickleTohdf5.py: Load each object separately and then make lists out of the voltage data, and corresponding event keys are saved in keyxxx.pkl files
 						 It also saves the time list into a separate pkl file
 		saveVhf5.py: Load each voltage list into a separate array with keys in the hf5 file object.
-		compileVDatah5f.py then generate input arrays, target arrays (for voltage oscillation) and corresponding key lists. The arrays are saved to .h5 files while the list is saved to a pickle object
+		compileVDatah5f.py then generate input arrays, target arrays (for voltage oscillation) and corresponding key lists. The arrays are saved to .h5 files while the list is saved to a text file
 
+		
+
+
+ECV2FGLTAllBus.py:
+	Event (fault, gen outage, line outage, tf outage) classification using three phase voltage and angles of all buses together
+	Noise, smoothing, time shifts are there, but no time shifts as of yet
+	5 PMUs are available only	
+ECV2FGLT1Busv2.py:
+	Event (fault, gen outage, line outage, tf outage) classification using three phase voltage of one bus as a sample
+	Noise, smoothing, time shifts are all there
+	5 PMUs are available only
+testFaultClassifierLISingleBus.py:
+	Just a fault classifier using seq data and single three phase bus as input.
+		
+		
+testMDSXAng.py:
+	Gets the co-ord map using branch impedance data
+	Also contains MDS experiments using the angles
+EventClassifier1BuswSNTS.py:
+	Improvement from EventClassifier1BuswSNTS.py: added motor start
+		
+EventClassifier1BuswSNTS.py:
+	Improvement from EventClassifier1BuswSN.py: added time shift
+		
+EventClassifier1BuswSN.py:
+	Improvement from EventClassifier1Bus.py: added noise and smoothing
+
+
+
+	
+EventClassifier1Bus.py:
+	Event (fault and gen outage) classification using three phase voltage of one bus as a sample
+		
+testEventClassifierAllBusesv4.py:
+	has scripts which puts all the fault and gen outage data into an array for testing with LSTM and SVM.
+	Changes from v3:
+		Line outage is not considered anymore
+		Provisions to time shift the data
+		
+testEventClassifierAllBusesv3.py:
+	Fault, gen and line outage classification, no time shift for evaluation
+	SVM and LSTM performance can be evaluated.
+	
+plotSingleCase.py:
+	Use this file to generate all volt, freq and angle plots for different type of events
+	Currently supports line outages and gen outages
+		
+		
+testFaultClassifierAllVPMUMimic.py:
+	Improves upon testFaultClassifierAllEventDataShifted.py by adding a 6 cycle filter and noise to mimic PMU data
+	Also tests xgboost and lstm on the dataset
+		
+		
+simDist.py:
+	Used to simulate generate gen outages and line outages on savnw_conp and its scaled up loads 
+
+		
+testMDS.py:
+	Implement multi-dimensional scaling to try to get co-ordinates of different buses using 
+	voltage drop difference during faults
+		
+clusterAngle.py:
+	Initial experimentation with the synchrophasor data
+		
+clustMultCont.py: 
+	used to show the operation of the hierarchical clustering algorithm in cases where mutliple events (N-2 plus fault) occur in a timeframe
+		
+testFaultClassifierAllEventDataShifted.py:
+	improvement from testFaultClassifierAllEventData: the input data is also shifted by half the time window
+	Also has feature to output the voltage data in ranked order according to min voltage recorded, essentially saying which buses are closest to fault
+		
+		
+testFaultClassifierAllEventData.py:
+	here the classifier only outputs the fault type using the voltage data of all the buses at the time of fault
+		
+testFaultClassifierLIFTv2.py:
+	Fault classification based on type as well as location (here vs elsewhere)
+		
+		
+testFaultClassifierLIFT.py:
+	Fault classification based on type only
+		
+EventDetectPCAFn.py:
+	Function which implements the PCA based event detection proposed in GFKA2015. Given x (time), y (signal) and the steady state time window, it returns a list of 
+	time indexes when the difference between the predicted steady state signal and the actual signal deviates beyond a certain threshold.
 avgFilterFn.py:
 			Implements a multi-cycle filter
 		
@@ -26,6 +182,11 @@ testFaultClassifierv3.py:
 		SLG C has class 4
 		everything else has class 5
 	Added functionality to see output when the results are shifted.
+	
+testFaultClassifierv4.py:
+	Improvements from v3:
+		The event data are phase shifted upto 5 timesteps and added to the data matrix
+		Also add the standard deviation of each phase data at the end
 convRawPconToZcon.py:
 	converts constant power loads to constant impedance loads and saves the raw file
 		
@@ -34,7 +195,10 @@ TS3phSim3phFaults.py:
 TS3phSim3phFaultsL.py:	
 	Script to apply three phase fault and PALG fault to all buses for multiple raw files (with scaled loads)
 	Also put functionality to check the output of the classifier to a voltage stream
-	
+
+TS3phSim3phFaultsLI.py:	
+	Similar to TS3phSim3phFaultsL.py, the difference is that here we put fault impedances = very low, impedance and 
+	impedance/2 of all branches connected to current fault bus
 	
 runSimFn3ph.py:
 	Function to get three phase voltage and angles for all buses while simulating an event, and also write these stuff to csv file as well as 
@@ -42,6 +206,10 @@ runSimFn3ph.py:
 
 runSimFn3phL.py::
 	Same as runSimFn3ph.py, just built for TS3phSim3phFaultsL.py
+runSimFn3phLI.py::
+	Same as runSimFn3phL.py, just built for TS3phSim3phFaultsLI.py
+	
+	
 testLROscLarge.py:
 	Runs various performance tests with the LR model as a classifier for voltage oscillation on the large dataset (100% to 106% load)
 	Generates the templates for class 0 and class 1

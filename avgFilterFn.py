@@ -2,7 +2,7 @@
 
 def avgFilter(data,cyc):
     # data: the data to be filtered
-    # cyc: 
+    # cyc: number of cycles in the filter
     filterOutput = []
 
     data = list(data)

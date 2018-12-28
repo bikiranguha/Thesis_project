@@ -52,7 +52,7 @@ exitParam = '1,EXIT,,,,,,,,,,,'
 #EventList = [event1Flag,event1Param,exitFlag,exitParam]
 """
 
-
+"""
 # one line out then a fault
 event1Flag = '-event01'
 event1Param = '0.1,OUT,LINE,201,202,,1,7,,,,,'
@@ -70,6 +70,23 @@ exitFlag = '-event05'
 exitParam = '10,EXIT,,,,,,,,,,,'
 EventList = [event1Flag,event1Param,event2Flag,event2Param,event3Flag,event3Param,event4Flag,event4Param,exitFlag,exitParam]
 """
+
+# just a single phase fault
+#FaultBus1 = '101'
+FaultBus1 = '151'
+event1Flag = '-event01'
+event1Param = '0.1,FAULTON,AG,' + FaultBus1 + ',,,,1.0e-6,1.0e-6,1.0e-6,0.0,0.0,0.0'
+
+event2Flag = '-event02'
+event2Param = '0.2,FAULTOFF,AG,' + FaultBus1 + ',,,,,,,,,'
+
+exitFlag = '-event03'
+exitParam = '0.5,EXIT,,,,,,,,,,,'
+EventList = [event1Flag, event1Param, event2Flag, event2Param, exitFlag, exitParam]
+
+
+
+"""
 # just N-2 line outages
 # one line out then a fault
 event1Flag = '-event01'
@@ -84,13 +101,13 @@ exitParam = '3,EXIT,,,,,,,,,,,'
 EventList = [event1Flag,event1Param,event2Flag,event2Param,exitFlag,exitParam]
 """
 
-Results = runSim(rawPath,EventList,'TS3phLoadOut.log')
+Results = runSim(rawPath,EventList,'log.log')
 
 # print the final steady state voltage of some bus
 #print Results[205].mag[-1]
 # get plots for all the buses in the HV set
 # plot to see if everything is ok
-for Bus in list(HVBusSet):
+for Bus in rawBusDataDict:
 
 	time = Results['time']
 	vMag = Results[int(Bus)].mag

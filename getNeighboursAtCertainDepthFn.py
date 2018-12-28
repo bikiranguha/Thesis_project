@@ -3,7 +3,8 @@ Generates a dictionary which organizes all the branch info within a certain spec
 """
 
 
-from generateNeighboursDataFn import generateNeighbours
+#from generateNeighboursDataFn import generateNeighbours
+from generateNeighbourImpedanceData import getBranchTFData
 from Queue import Queue
 
 
@@ -25,7 +26,8 @@ def getNeighboursDepthN(OriginBus,Raw,maxDepth):
 
 
 
-	_,DepthOneBranchDataDict = generateNeighbours(Raw) # DepthOneBranchDataDict contains all the required info
+	#_,DepthOneBranchDataDict = generateNeighbours(Raw) # DepthOneBranchDataDict contains all the required info
+	DepthOneBranchDataDict = getBranchTFData(Raw) # DepthOneBranchDataDict contains all the required info
 
 	MultDepthBranchDataDict[OriginBus] = multDepthBranchData()
 
@@ -119,8 +121,9 @@ def getNeighboursDepthN(OriginBus,Raw,maxDepth):
 
 
 if __name__ == '__main__':
-	Raw = 'Raw0509.raw'
-	nDepthDict = getNeighboursDepthN('750221',Raw,5)
+	#Raw = 'Raw0509.raw'
+	Raw = 'savnw.raw'
+	nDepthDict = getNeighboursDepthN('151',Raw,2)
 	for key in nDepthDict.keys():
 		print nDepthDict[key].toBus
 		print nDepthDict[key].X

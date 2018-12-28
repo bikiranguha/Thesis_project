@@ -2,9 +2,15 @@
 import csv
 import matplotlib.pyplot as plt
 from avgFilterFn import avgFilter
-vFileName = 'fault3ph/vData3phL.csv' # csv file containing voltage data (different types of fault)
+#vFileName = 'fault3ph/vData3phL.csv' # csv file containing voltage data (different types of fault)
+#tFileName = 'fault3ph/tData3ph.csv' # csv file containing the time data
+#eventKeyFile = 'fault3ph/eventIDFileL.txt'
+
+vFileName = 'fault3ph/vData3phLI.csv' # csv file containing voltage data (different types of fault)
 tFileName = 'fault3ph/tData3ph.csv' # csv file containing the time data
-eventKeyFile = 'fault3ph/eventIDFileL.txt'
+eventKeyFile = 'fault3ph/eventIDFileLI.txt'
+
+
 vFile = open(vFileName,'rb')
 tFile = open(tFileName,'rb')
 readerV=csv.reader(vFile,quoting=csv.QUOTE_NONNUMERIC) # so that the entries are converted to floats
@@ -27,15 +33,18 @@ with open(eventKeyFile,'r') as f:
 interestingInd = []
 
 # visualize 3 ph at the fault bus
-event = 'R106/F3018/B3018/ABCG'
-eventKeyA = '{}/A'.format(event)
+#event = 'R106/F3018/B3018/ABCG'
+event = 'R105/F3001/B3018/AG'
+#faultZ = '4.0e-03'
+faultZ = '1.0e-6'
+eventKeyA = '{}/A/{}'.format(event,faultZ)
 eventIndA = eventList.index(eventKeyA)
 
-eventKeyB = '{}/B'.format(event)
+eventKeyB = '{}/B/{}'.format(event,faultZ)
 eventIndB = eventList.index(eventKeyB)
 
 
-eventKeyC = '{}/C'.format(event)
+eventKeyC = '{}/C/{}'.format(event,faultZ)
 eventIndC = eventList.index(eventKeyC)
 
 
@@ -92,7 +101,7 @@ plt.legend()
 plt.grid()
 plt.ylim(0,1.5)
 plt.show()
-"""
+
 
 # close files
 vFile.close()

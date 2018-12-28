@@ -18,11 +18,11 @@ import math
 #from input_data import EventList, rawPath
 
 
-def runSim(rawPath,EventList,TS3phOutFile):
+def runSim(rawPath,EventList, TS3phLogFile, TS3phOutFile):
 
     #save TS3ph log to this file
     #f='TS3phlogFault.txt'
-    out_file = open(TS3phOutFile, 'w')
+    out_file = open(TS3phLogFile, 'w')
 
     ################################################################################
 
@@ -118,7 +118,7 @@ def runSim(rawPath,EventList,TS3phOutFile):
 
 
     #load output file
-    output = readBinary('TS3phoutput.out')
+    output = readBinary(TS3phOutFile)
     output_lenght = output.shape[1]
     # Find actual length of time, ignoring extra 0's at the end
     act_length = output_lenght
@@ -148,8 +148,12 @@ def runSim(rawPath,EventList,TS3phOutFile):
 
     #clean output files
 
-    os.system('rm TS3phoutput.out')
-    os.system('rm TS3phoutput.out.info')
+    # os.system('rm TS3phoutput.out')
+    # os.system('rm TS3phoutput.out.info')
+
+    #os.system('rm {}'.format(TS3phOutFile))
+
+
     return SimResults
 
 
